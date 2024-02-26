@@ -2,11 +2,13 @@
 
 package cuteneko.tgbridge
 
+import cuteneko.tgbridge.Bridge.Companion.LOGGER
 import cuteneko.tgbridge.tgbot.User
 import kotlinx.coroutines.DelicateCoroutinesApi
 import net.minecraft.text.LiteralTextContent
 import net.minecraft.text.Text
 import net.minecraft.text.TranslatableTextContent
+import java.util.*
 
 fun Text?.toPlainString(formatted: Boolean = true): String {
     if (this == null) {
@@ -21,7 +23,11 @@ fun Text?.toPlainString(formatted: Boolean = true): String {
 
             is TranslatableTextContent -> {
                 val lang = Bridge.LANG
-                if(!lang.containsKey(content.key)) content.key
+                if(!lang.containsKey(content.key)) {
+                    val guess = content.key.split('.').last().replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
+                    LOGGER.warn("Key '${content.key}' is missing from LANG - using '${guess}'.")
+                    return guess
+                }
                 val args = content.args.map {
                     if(it is Text) it.toPlainString()
                     else it.toString()
